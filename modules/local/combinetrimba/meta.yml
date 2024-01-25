@@ -1,0 +1,45 @@
+name: combinetrimba
+description: Combine the output from ribotish, meme and gettranscripts into a single table
+keywords:
+  - riboseq
+  - fasta
+  - motif
+  - fasta
+  - memesuite
+  - reference
+tools:
+  - combinetrimba.py:
+      description: |
+        The main program.
+      homepage: "https://github.com/thondeboer/modules"
+      documentation: "https://github.com/thondeboer/modules"
+      tool_dev_url: "https://github.com/thondeboer/modules"
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - transcript:
+      type: file
+      description: |
+        Partial transcript sequences in FASTA format.
+      pattern: "*.{fa,fasta,fna}"
+  - ribotish:
+      type: file
+      description: Ribotish output file, filtered p-values
+      pattern: "*.ribotish.txt"
+  - meme:
+      type: file
+      description: Text output of the meme novel motif detection tool
+      pattern: "*/meme.txt"
+output:
+  - trimbaresults:
+      type: file
+      description: Tab delimited file containing the combined results from ribotish, meme and gettranscripts
+      pattern: "*.trimba_results.tsv"
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

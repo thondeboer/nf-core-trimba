@@ -1,0 +1,66 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ribotish_quality"
+## TODO nf-core: Add a description of the module and list keywords
+description: Assess quality of the Riboseq data for uORF detection.
+keywords:
+  - sequence
+  - genomics
+  - transcripts
+  - ORF
+  - CDS
+tools:
+  - "ribotish":
+      ## TODO nf-core: Add a description and other details for the software below
+      description: Ribo TIS Hunter (Ribo-TISH), for identifying translation activities using ribosome profiling data.
+      homepage: "https://github.com/zhpn1024/ribotish/tree/master"
+      documentation: "https://github.com/zhpn1024/ribotish/tree/master"
+      doi: "10.1093/nar/gkv416"
+      licence: ["Custom"]
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - bam:
+      type: file
+      description: BAM file containing the aligned Riboseq reads.
+      pattern: "*.{bam}"
+  - bai:
+      type: file
+      description: Index file for BAM filecontaining the aligned Riboseq reads.
+      pattern: "*.{bai}"
+  - gtf:
+      type: file
+      description: Annotation GTF file for genome sequence
+      pattern: "*.{gtf.gz}"
+output:
+  #Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - versions:
+      type: file
+      description: File containing software versions.
+      pattern: "versions.yml"
+  - results:
+      type: file
+      description: Tab delimited file containing the quality assessment of the Riboseq data.
+      pattern: "*.{txt}"
+  - pdf:
+      type: file
+      description: PDF of plot of all the distributions and illustration of quality and P-site offset.
+      pattern: "*.{pdf}"
+  - psites:
+      type: file
+      description: The offset parameter file for the P-site, as a python dict.
+      pattern: "*.{py}"
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

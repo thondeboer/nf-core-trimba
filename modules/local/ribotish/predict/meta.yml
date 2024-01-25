@@ -1,0 +1,76 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ribotish_predict"
+## TODO nf-core: Add a description of the module and list keywords
+description: Predict uORF in trnascripts using Riboseq data.
+keywords:
+  - sequence
+  - genomics
+  - transcripts
+  - ORF
+  - CDS
+tools:
+  - "ribotish":
+      ## TODO nf-core: Add a description and other details for the software below
+      description: Ribo TIS Hunter (Ribo-TISH), for identifying translation activities using ribosome profiling data.
+      homepage: "https://github.com/zhpn1024/ribotish/tree/master"
+      documentation: "https://github.com/zhpn1024/ribotish/tree/master"
+      doi: "10.1093/nar/gkv416"
+      licence: ["Custom"]
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - bam:
+      type: file
+      description: BAM file containing the aligned Riboseq reads.
+      pattern: "*.{bam}"
+  - bai:
+      type: file
+      description: Index file for BAM filecontaining the aligned Riboseq reads.
+      pattern: "*.{bai}"
+  - gtf:
+      type: file
+      description: Annotation GTF file for genome sequence
+      pattern: "*.{gtf.gz}"
+  - para:
+      type: file
+      description: The offset parameter file for the P-site, as a python dict as produced by the quality module.
+      pattern: "*.{py}"
+
+output:
+  #Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - versions:
+      type: file
+      description: File containing software versions.
+      pattern: "versions.yml"
+  - results:
+      type: file
+      description: Tab delimited file containing the p-value filtered predicitons.
+      pattern: "*.ribotish.txt"
+  - allresults:
+      type: file
+      description: Tab delimited file containing the full set of predicitons.
+      pattern: "*.ribotish_all.txt"
+  - bam:
+      type: file
+      description: BAM file containing the aligned Riboseq reads.
+      pattern: "*.{bam}"
+  - bai:
+      type: file
+      description: Index file for BAM filecontaining the aligned Riboseq reads.
+      pattern: "*.{bai}"
+            
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

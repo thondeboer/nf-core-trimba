@@ -1,0 +1,56 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "ribotish"
+description: Predicting uORF's from Riboseq data.
+keywords:
+  - motifs
+  - sequence
+  - genomics
+components:
+  - ribotish/quality
+  - ribotish/predict
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - bam:
+      type: file
+      description: BAM file containing the aligned Riboseq reads.
+      pattern: "*.{bam}"
+  - bai:
+      type: file
+      description: Index file for BAM filecontaining the aligned Riboseq reads.
+      pattern: "*.{bai}"
+  - gtf:
+      type: file
+      description: Annotation GTF file for genome sequence
+      pattern: "*.{gtf.gz}"
+  - fasta:
+      type: file
+      description: FASTA-formatted file of sequences.
+      pattern: "*.{fasta,fa,seq}"
+
+output:
+  #Only when we have meta
+  - versions:
+      type: file
+      description: File containing software versions.
+      pattern: "versions.yml"
+  - results:
+      type: file
+      description: Tab delimited file containing the p-value filtered predicitons.
+      pattern: "*.ribotish.txt"
+  - allresults:
+      type: file
+      description: Tab delimited file containing the full set of predicitons.
+      pattern: "*.ribotish_all.txt"
+  
+      
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"
