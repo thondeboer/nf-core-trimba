@@ -1,0 +1,7 @@
+version: '3'
+services:
+  memesuite:
+    build: .
+    image: ghcr.io/thondeboer/memesuite:5.5.5
+# echo $GITHUB_TOKEN | docker login ghcr.io -u thondeboer --password-stdin
+# docker push ghcr.io/thondeboer/memesuite:5.5.5

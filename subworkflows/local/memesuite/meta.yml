@@ -1,0 +1,54 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "memesuite"
+## TODO nf-core: Add a description of the module and list keywords
+description: Assess quality of the Riboseq data for uORF detection.
+keywords:
+  - motifs
+  - sequence
+  - genomics
+
+components:
+  - meme
+  - sea
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - fasta:
+      type: file
+      description: FASTA-formatted file of sequences
+      pattern: "*.{fasta,fa,seq}"
+  - motifs:
+      type: file
+      description: One or more files containing motifs in MEME format
+      pattern: "*.{meme}"
+
+output:
+  #Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - versions:
+      type: file
+      description: File containing software versions.
+      pattern: "versions.yml"
+  - resulttxt:
+      type: file
+      description: The NOVEL motifs in tab-delimited text format.
+      pattern: "*.{txt}"
+  - sites:
+      type: file
+      description: The KNOWN motif sites in tab-delimited text format.
+      pattern: "*/sites.tsv"
+      
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

@@ -1,0 +1,13 @@
+# Use an official base image
+FROM biocontainers/biocontainers:v1.2.0_cv1
+
+# Set metadata (optional)
+LABEL maintainer="thondeboer@me.com"
+LABEL description="Custom Bioinformatics Docker Image"
+
+# Install bioinformatics tools
+# Here, you can add commands to install the tools you need, for example:
+RUN conda install -c bioconda meme=5.5.5
+
+# Set a default command or entry point (optional)
+CMD ["bash"]

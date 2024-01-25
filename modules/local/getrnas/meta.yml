@@ -1,0 +1,62 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "getrnas"
+description: Extract transcripts from a genome using a GTF file and a of RNA types.
+keywords:
+  - genomics
+  - genes
+  - transcripts
+  - rna
+tools:
+  - "getrnas":
+      description: Extract transcripts from a genome using a GTF file and a list of RNA types
+      homepage: "https://github.com/thondeboer/modules"
+      documentation: "https://github.com/thondeboer/modules"
+      tool_dev_url: "https://github.com/thondeboer/modules"
+      doi: "10.1093/nar/gkv416" # TODO change this to the correct DOI for the tool
+      licence: [MIT]
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - fasta:
+      type: file
+      description: FASTA-formatted file of the genome sequence
+      pattern: "*.{fa, fasta, fna}"
+  - gtf:
+      type: file
+      description: Annotation GTF file for genome sequence
+      pattern: "*.{gtf.gz}"
+  - dbfile:
+      type: file
+      description: SQlite database file of the genome annotation (gffutils)
+      pattern: "*.{db}"
+  - rnas:
+      type: list
+      description: List of RNA types to include in the fasta output file (e.g. lincRNA,snoRNA etc.).
+
+output:
+  #Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - fasta:
+      type: file
+      description: Transcripts in FASTA format
+      pattern: "*.{fa}"
+
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

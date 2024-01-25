@@ -1,0 +1,2 @@
+meme/findmotifs:
+  - "modules/nf-core/meme/findmotifs/**"

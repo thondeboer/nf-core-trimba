@@ -1,0 +1,110 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "prepare_genome"
+description: Prepare and create, if needed, the various files needed for the workflow.
+keywords:
+  - motifs
+  - sequence
+  - genomics
+components:
+  - gunzip
+  - custom/getchromsizes
+  - bowtie/build
+  - rsem/prepare-reference
+
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`.
+  - fasta:
+      type: file
+      description: FASTA-formatted file of sequences.
+      pattern: "*.{fasta,fa,seq}"
+  - gtf:
+      type: file
+      description: Annotation GTF file for genome sequence.
+      pattern: "*.{gtf.gz}"
+  - bowtie_index:
+      type: file
+      description: Bowtie index files
+      pattern: "*.{1.ebwt,2.ebwt,3.ebwt,4.ebwt.rev.1.ebwt,4.ebwt.rev.2.ebwt}"
+  - gtfdb:
+      type: file
+      description: SQlite database file of the genome annotation (gffutils).
+      pattern: "*.{db}"
+  - rna_index:
+      type: file
+      description: Bowtie index files of the RNA sequences used for removal.
+      pattern: "*.{1.ebwt,2.ebwt,3.ebwt,4.ebwt.rev.1.ebwt,4.ebwt.rev.2.ebwt}"
+  - rnas_to_filter:
+      type: list
+      description: List of RNA types to include in the fasta output file (e.g. lincRNA,snoRNA etc.).
+  - transcripts_fasta:
+      type: file
+      description: FASTA-formatted file of the genome sequence.
+      pattern: "*.{fa, fasta, fna}"
+  - transcripts_index:
+      type: file
+      description: Index file for the transcripts FASTA file.
+      pattern: "*.{fai}"
+  - save_reference:
+      type: boolean
+      description: Save the reference files for future use.
+      default: false
+  - prepare_tool_indices:
+      type: list
+      description: |
+        List of indices to prepare.
+        One of ['RNA'].
+output:
+  #Only when we have meta
+  - versions:
+      type: file
+      description: File containing software versions.
+      pattern: "versions.yml"
+  - fasta:
+      type: file
+      description: Genome FASTA file (Uncompressed if it was gzipped).
+      pattern: "*.{fa}"
+  - fai:
+      type: file
+      description: Index file for the genome FASTA file.
+      pattern: "*.{fai}"
+  - chrom_sizes:
+      type: file
+      description: Chromosome sizes file.
+      pattern: "*.{sizes}"
+  - gtf:
+      type: file
+      description: Genome GTF file (Uncompressed if it was gzipped).
+      pattern: "*.{gtf}"
+  - gtfdb:
+      type: file
+      description: SQlite database file of the genome annotation (gffutils).
+      pattern: "*.{db}"
+  - bowtie_index:
+      type: file
+      description: Bowtie index files.
+      pattern: "*.{1.ebwt,2.ebwt,3.ebwt,4.ebwt.rev.1.ebwt,4.ebwt.rev.2.ebwt}"
+  - rnas_index:  
+      type: file
+      description: Bowtie index files of the RNA sequences used for removal.
+      pattern: "*.{1.ebwt,2.ebwt,3.ebwt,4.ebwt.rev.1.ebwt,4.ebwt.rev.2.ebwt}"
+  - transcripts_fasta:
+      type: file
+      description: FASTA-formatted file of the genome sequence (Uncompressed it it was gzipped).
+      pattern: "*.{fa, fasta, fna}"
+  - transcripts_index:
+      type: file
+      description: Index file for the transcripts FASTA file.
+      pattern: "*.{fai}"
+  
+      
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

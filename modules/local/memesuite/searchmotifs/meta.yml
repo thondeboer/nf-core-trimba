@@ -1,0 +1,66 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "meme_searchmotifs"
+description: Perform known motif discovery on DNA, RNA, protein or custom alphabet datasets.
+keywords:
+  - motifs
+  - sequence
+  - genomics
+tools:
+  - "sea":
+      ## TODO nf-core: Add a description and other details for the software below
+      description: "Find ungapped motifs in unaligned DNA, RNA or protein sequences."
+      homepage: "https://meme-suite.org/meme/tools/sea"
+      documentation: "https://meme-suite.org/meme/doc/overview.html"
+      tool_dev_url: "https://meme-suite.org/meme/tools/sea"
+      doi: "10.1093/nar/gkv416"
+      licence: ["Custom"]
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - fasta:
+      type: file
+      description: FASTA-formatted file of sequences
+      pattern: "*.{fasta,fa,seq}"
+  - motifs:
+      type: file
+      description: One or more files containing motifs in MEME format
+      pattern: "*.{meme}"
+
+output:
+  #Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - htmlreport:
+      type: file
+      description: The motifs in HTML format
+      pattern: "*.{html}"
+  - resulttsv:
+      type: file
+      description: The summarized results of the motif search
+      pattern: "*/sea.tsv"
+  - sequences:
+      type: file
+      description: The sequences in text format
+      pattern: "**/sequences.tsv"
+  - sites:
+      type: file
+      description: The motifs in text format
+      pattern: "*/sites.tsv"
+      
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"

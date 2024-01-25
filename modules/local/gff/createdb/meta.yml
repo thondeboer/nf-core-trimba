@@ -1,0 +1,46 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "gff_createdb"
+description: Create the SQLite database from a GTF file, using GFFUTILS.
+keywords:
+  - gtf
+  - genes
+  - transcripts
+  - rna
+tools:
+  - "gff_createdb":
+      description: Create the SQLite database from a GTF file, using GFFUTILS.
+      homepage: "https://daler.github.io/gffutils/"
+      documentation: "https://daler.github.io/gffutils/"
+      doi: "10.1093/nar/gkv416" # TODO change this to the correct DOI for the tool
+      licence: [MIT]
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - gtf:
+      type: file
+      description: Annotation GTF file for genome sequence
+      pattern: "*.{gtf.gz}"
+output:
+  #Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - dbfile:
+      type: file
+      description: SQlite database file of the genome annotation (gffutils)
+      pattern: "*.{db}"
+authors:
+  - "@thondeboer"
+maintainers:
+  - "@thondeboer"
