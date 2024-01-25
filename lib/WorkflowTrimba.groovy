@@ -18,6 +18,28 @@ class WorkflowTrimba {
         if (!params.fasta) {
             Nextflow.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
         }
+
+        // TODO Add more parameter checks here
+    }
+
+    //
+    // Function to validate channels from input samplesheet
+    //
+    public static ArrayList validateInput(input) {
+        def (metas, fastqs) = input[1..2]
+
+        // Check that multiple runs of the same sample are of the same strandedness
+        def strandedness_ok = metas.collect{ it.strandedness }.unique().size == 1
+        if (!strandedness_ok) {
+            Nextflow.error("Please check input samplesheet -> Multiple runs of a sample must have the same strandedness!: ${metas[0].id}")
+        }
+
+        // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
+        def endedness_ok = metas.collect{ it.single_end }.unique().size == 1
+        if (!endedness_ok) {
+            Nextflow.error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
+        }
+        return [ metas[0], fastqs ]
     }
 
     //
@@ -106,6 +128,18 @@ class WorkflowTrimba {
         return description_html
     }
 
+    //
+    // Create MultiQC tsv custom content from a list of values
+    //
+    public static String multiqcTsvFromList(tsv_data, header) {
+        def tsv_string = ""
+        if (tsv_data.size() > 0) {
+            tsv_string += "${header.join('\t')}\n"
+            tsv_string += tsv_data.join('\n')
+        }
+        return tsv_string
+    }
+    
     //
     // Exit pipeline if incorrect --genome key provided
     //

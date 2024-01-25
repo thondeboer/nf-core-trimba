@@ -5,20 +5,108 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "bedtools/genomecov": {
+                        "branch": "master",
+                        "git_sha": "1d1cb7bfef6cf67fbc7faafa6992ad8bdc3045b3",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "bowtie/align": {
+                        "branch": "master",
+                        "git_sha": "3c77ca9aac783e76c3614a06db3bfe4fef619bde",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "bowtie/build": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "cat/fastq": {
+                        "branch": "master",
+                        "git_sha": "e8940f18cfbbdcdcde38f4b3633df5ed4e48da10",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "bba7e362e4afead70653f84d8700588ea28d0f9e",
-                        "installed_by": ["modules"]
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "custom/getchromsizes": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "cutadapt": {
+                        "branch": "master",
+                        "git_sha": "07881e42938b4f0070e864b45d424b01745bc3a4",
+                        "installed_by": [
+                            "modules"
+                        ]
                     },
                     "fastqc": {
                         "branch": "master",
                         "git_sha": "65ad3e0b9a4099592e1102e92e10455dc661cf53",
-                        "installed_by": ["modules"]
+                        "installed_by": [
+                            "fastq_fastqc_umitools_trimgalore",
+                            "modules"
+                        ]
+                    },
+                    "gunzip": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": [
+                            "modules"
+                        ]
                     },
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "4ab13872435962dadc239979554d13709e20bf29",
-                        "installed_by": ["modules"]
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "rsem/preparereference": {
+                        "branch": "master",
+                        "git_sha": "8ec12d844837b0167540c910afe4d3f920cd7114",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "trimgalore": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": [
+                            "fastq_fastqc_umitools_trimgalore"
+                        ]
+                    },
+                    "umitools/extract": {
+                        "branch": "master",
+                        "git_sha": "65ad3e0b9a4099592e1102e92e10455dc661cf53",
+                        "installed_by": [
+                            "fastq_fastqc_umitools_trimgalore"
+                        ]
+                    }
+                }
+            },
+            "subworkflows": {
+                "nf-core": {
+                    "fastq_fastqc_umitools_trimgalore": {
+                        "branch": "master",
+                        "git_sha": "cfd937a668919d948f6fcbf4218e79de50c2f36f",
+                        "installed_by": [
+                            "subworkflows"
+                        ]
                     }
                 }
             }

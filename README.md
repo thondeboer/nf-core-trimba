@@ -13,20 +13,21 @@
 
 ## Introduction
 
-**nf-core/trimba** is a bioinformatics pipeline that ...
+**nf-core/trimba** is a bioinformatics pipeline that analyzes Riboseq data and detects known and novel motifs in 5' UTR sequences. It performs adapter trimming, using `cutadapt`, `trimgalore`, or `fastp`, allows for the removal for unwanted RNA species (e.g. lincRNA, snoRNA etc.), using `bowtie1`, maps the resulting reads to the genome and the transcriptome using `bowtie1`, runs `ribotish` ORF detector and extracts the 5'-UTR sequences for transcripts and applies `meme` and `sea` from the `memesuite` to detect novel and known motifs.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
 
 <!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
      workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Trim reads ([Cutadapt](https://cutadapt.readthedocs.io/en/stable/index.html), [Trimgalore](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md), or [fastp](https://github.com/OpenGene/fastp))
+1. Remove unwanted RNA species, using [bowtie1]().
+1. Map filtered RNA reads to the genome and the transcriptome using [bowtie1]().
+1. Find uORF using [ribotish]() and extract the 5'-UTR sequences
+1. Find novel and known motifs, using [meme]() and [sea]() from the [memesuite](), respectively.
+1. Combine the results in a combined table and a bedgraph file with the coverage of the transcripts.
+1. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
@@ -57,6 +58,8 @@ Now, you can run the pipeline using:
 nextflow run nf-core/trimba \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
+   --fasta Mus_musculus.GRCm38.dna.primary_assembly.fa \
+   --gtf Mus_musculus.GRCm38.102.gtf.gz \
    --outdir <OUTDIR>
 ```
 
@@ -78,13 +81,12 @@ nf-core/trimba was originally written by Thon de Boer.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+_Yasar Kasu_
 
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on the [Slack `#trimba` channel](https://nfcore.slack.com/channels/trimba) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citations
 

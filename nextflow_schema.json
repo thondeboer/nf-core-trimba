@@ -18,6 +18,7 @@
                     "exists": true,
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
+                    "schema": "assets/schema_input.json",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/trimba/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
@@ -69,7 +70,8 @@
                     "description": "Do not load the iGenomes reference config.",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
+                    "default": true
                 }
             }
         },
@@ -284,5 +286,128 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "gtf": {
+            "type": "string"
+        },
+        "rna_index": {
+            "type": "string"
+        },
+        "save_reference": {
+            "type": "boolean"
+        },
+        "skip_remove_noncoding_rna": {
+            "type": "boolean"
+        },
+        "rnas_to_filter": {
+            "type": "string",
+            "default": "scRNA,3prime_overlapping_ncRNA,miRNA,snRNA,macro_lncRNA,sRNA,lincRNA,Mt_rRNA,scaRNA,snoRNA,rRNA,Mt_tRNA,bidirectional_promoter_lncRNA,misc_RNA"
+        },
+        "gtfdb": {
+            "type": "string"
+        },
+        "save_unaligned": {
+            "type": "boolean",
+            "default": true
+        },
+        "with_umi": {
+            "type": "boolean"
+        },
+        "skip_umi_extract": {
+            "type": "boolean"
+        },
+        "umitools_extract_method": {
+            "type": "string",
+            "default": "string"
+        },
+        "umitools_grouping_method": {
+            "type": "string",
+            "default": "directional"
+        },
+        "umitools_dedup_stats": {
+            "type": "boolean"
+        },
+        "umitools_bc_pattern": {
+            "type": "string"
+        },
+        "umitools_bc_pattern2": {
+            "type": "string"
+        },
+        "umitools_umi_separator": {
+            "type": "string"
+        },
+        "umi_discard_read": {
+            "type": "string"
+        },
+        "save_umi_intermeds": {
+            "type": "boolean"
+        },
+        "trimmer": {
+            "type": "string",
+            "default": "cutadapt"
+        },
+        "min_trimmed_reads": {
+            "type": "integer",
+            "default": 10000
+        },
+        "extra_trimgalore_args": {
+            "type": "string"
+        },
+        "extra_fastp_args": {
+            "type": "string"
+        },
+        "save_trimmed": {
+            "type": "boolean"
+        },
+        "skip_trimming": {
+            "type": "boolean"
+        },
+        "skip_qc": {
+            "type": "boolean"
+        },
+        "skip_fastqc": {
+            "type": "boolean"
+        },
+        "skip_multiqc": {
+            "type": "boolean"
+        },
+        "bowtie_index": {
+            "type": "string"
+        },
+        "extra_cutadapt_args": {
+            "type": "string"
+        },
+        "extra_align_rna_args": {
+            "type": "string"
+        },
+        "extra_align_genome_args": {
+            "type": "string"
+        },
+        "extra_ribotish_qual_args": {
+            "type": "string"
+        },
+        "extra_ribotish_args": {
+            "type": "string"
+        },
+        "genes_file": {
+            "type": "string"
+        },
+        "motifs_file": {
+            "type": "string"
+        },
+        "transcripts_fasta": {
+            "type": "string"
+        },
+        "transcripts_index": {
+            "type": "string"
+        },
+        "extra_align_transcriptome_args": {
+            "type": "string"
+        },
+        "nmotifs": {
+            "type": "integer",
+            "default": 1
+        }
+    }
 }
