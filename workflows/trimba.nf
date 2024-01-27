@@ -41,7 +41,8 @@ ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/mul
 ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-def dummy_file                        = "$baseDir/assets/dummy_file.txt"
+def dummy_file1                       = "$baseDir/assets/dummy_file.txt"
+def dummy_file2                       = "$baseDir/assets/dummy_file2.txt"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -122,199 +123,218 @@ workflow TRIMBA {
     ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
     //
-    // Create input channel from input file provided through params.input
+    // Check if we even need to run riboSEQ
     //
-    Channel
-        .fromSamplesheet("input")
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
+    // Channel
+    //     .fromPath(dummy_file)
+    //     .into { dummyFileChan1; dummyFileChan2 }
+    ch_ribotish_results = [ [:], dummy_file1 ]
+    ch_genomecov        = [ [:], dummy_file2 ]
+    if (!params.skip_riboseq) {
+
+        //
+        // Create input channel from input file provided through params.input
+        //
+        Channel
+            .fromSamplesheet("input")
+            .map {
+                meta, fastq_1, fastq_2 ->
+                    if (!fastq_2) {
+                        return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+                    } else {
+                        return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+                    }
+            }
+            .groupTuple()
+            .map {
+                WorkflowTrimba.validateInput(it)
+            }
+            .branch {
+                meta, fastqs ->
+                    single  : fastqs.size() == 1
+                        return [ meta, fastqs.flatten() ]
+                    multiple: fastqs.size() > 1
+                        return [ meta, fastqs.flatten() ]
+            }
+            .set { ch_fastq }
+
+        //
+        // MODULE: Concatenate FastQ files from same sample if required
+        //
+        CAT_FASTQ (
+            ch_fastq.multiple
+        )
+        .reads
+        .mix(ch_fastq.single)
+        .set { ch_cat_fastq }
+        ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first().ifEmpty(null))
+
+
+        //
+        // Many options for trimming, so we have a few subworkflows
+        //
+        ch_filtered_reads      = ch_cat_fastq
+        ch_fastqc_raw_multiqc  = Channel.empty()
+        ch_fastqc_trim_multiqc = Channel.empty()
+        ch_trim_log_multiqc    = Channel.empty()
+        ch_trim_read_count     = Channel.empty()
+
+        //
+        // MODULE: CUTADAPT
+        //
+        // We mimic the subworkflow here for cutadapt with before and after trimming FASTQC
+        if (params.trimmer == 'cutadapt' && !params.skip_trimming) {
+            if (!params.skip_qc && !params.skip_fastqc) {
+                FASTQC (
+                    ch_cat_fastq
+                )
+                ch_fastqc_raw_multiqc = FASTQC.out.zip
+                ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+            }
+            CUTADAPT ( ch_cat_fastq )
+            ch_filtered_reads      = CUTADAPT.out.reads
+            ch_versions = ch_versions.mix(CUTADAPT.out.versions)
+            if (!params.skip_qc && !params.skip_fastqc) {
+                POSTTRIM_FASTQC (
+                    ch_filtered_reads
+                )
+                ch_fastqc_trim_multiqc = POSTTRIM_FASTQC.out.zip
+                ch_versions = ch_versions.mix(POSTTRIM_FASTQC.out.versions.first())
+            }
+            // TODO get trim_read_count from cutadapt
         }
-        .groupTuple()
-        .map {
-            WorkflowTrimba.validateInput(it)
-        }
-        .branch {
-            meta, fastqs ->
-                single  : fastqs.size() == 1
-                    return [ meta, fastqs.flatten() ]
-                multiple: fastqs.size() > 1
-                    return [ meta, fastqs.flatten() ]
-        }
-        .set { ch_fastq }
-
-    //
-    // MODULE: Concatenate FastQ files from same sample if required
-    //
-    CAT_FASTQ (
-        ch_fastq.multiple
-    )
-    .reads
-    .mix(ch_fastq.single)
-    .set { ch_cat_fastq }
-    ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first().ifEmpty(null))
-
-
-    //
-    // Many options for trimming, so we have a few subworkflows
-    //
-    ch_filtered_reads      = ch_cat_fastq
-    ch_fastqc_raw_multiqc  = Channel.empty()
-    ch_fastqc_trim_multiqc = Channel.empty()
-    ch_trim_log_multiqc    = Channel.empty()
-    ch_trim_read_count     = Channel.empty()
-
-    //
-    // MODULE: CUTADAPT
-    //
-    // We mimic the subworkflow here for cutadapt with before and after trimming FASTQC
-    if (params.trimmer == 'cutadapt' && !params.skip_trimming) {
-        if (!params.skip_qc && !params.skip_fastqc) {
-            FASTQC (
-                ch_cat_fastq
+        //
+        // SUBWORKFLOW: Read QC, extract UMI and trim adapters with TrimGalore!
+        //
+        if (params.trimmer == 'trimgalore') {
+            FASTQ_FASTQC_UMITOOLS_TRIMGALORE (
+                ch_cat_fastq,
+                params.skip_fastqc || params.skip_qc,
+                params.with_umi,
+                params.skip_umi_extract,
+                params.skip_trimming,
+                params.umi_discard_read,
+                params.min_trimmed_reads
             )
-            ch_fastqc_raw_multiqc = FASTQC.out.zip
-            ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+            ch_filtered_reads      = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads
+            ch_fastqc_raw_multiqc  = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_zip
+            ch_fastqc_trim_multiqc = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_zip
+            ch_trim_log_multiqc    = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_log
+            ch_trim_read_count     = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_read_count
+            ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.versions)
         }
-        CUTADAPT ( ch_cat_fastq )
-        ch_filtered_reads      = CUTADAPT.out.reads
-        ch_versions = ch_versions.mix(CUTADAPT.out.versions)
-        if (!params.skip_qc && !params.skip_fastqc) {
-            POSTTRIM_FASTQC (
-                ch_filtered_reads
+
+        //
+        // SUBWORKFLOW: Read QC, extract UMI and trim adapters with fastp
+        //
+        if (params.trimmer == 'fastp') {
+            FASTQ_FASTQC_UMITOOLS_FASTP (
+                ch_cat_fastq,
+                params.skip_fastqc || params.skip_qc,
+                params.with_umi,
+                params.skip_umi_extract,
+                params.umi_discard_read,
+                params.skip_trimming,
+                [],
+                params.save_trimmed,
+                params.save_trimmed,
+                params.min_trimmed_reads
             )
-            ch_fastqc_trim_multiqc = POSTTRIM_FASTQC.out.zip
-            ch_versions = ch_versions.mix(POSTTRIM_FASTQC.out.versions.first())
+            ch_filtered_reads      = FASTQ_FASTQC_UMITOOLS_FASTP.out.reads
+            ch_fastqc_raw_multiqc  = FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_raw_zip
+            ch_fastqc_trim_multiqc = FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_zip
+            ch_trim_log_multiqc    = FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_json
+            ch_trim_read_count     = FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_read_count
+            ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions)
         }
-        // TODO get trim_read_count from cutadapt
-    }
-    //
-    // SUBWORKFLOW: Read QC, extract UMI and trim adapters with TrimGalore!
-    //
-    if (params.trimmer == 'trimgalore') {
-        FASTQ_FASTQC_UMITOOLS_TRIMGALORE (
-            ch_cat_fastq,
-            params.skip_fastqc || params.skip_qc,
-            params.with_umi,
-            params.skip_umi_extract,
-            params.skip_trimming,
-            params.umi_discard_read,
-            params.min_trimmed_reads
-        )
-        ch_filtered_reads      = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads
-        ch_fastqc_raw_multiqc  = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_zip
-        ch_fastqc_trim_multiqc = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_zip
-        ch_trim_log_multiqc    = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_log
-        ch_trim_read_count     = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_read_count
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.versions)
-    }
 
-    //
-    // SUBWORKFLOW: Read QC, extract UMI and trim adapters with fastp
-    //
-    if (params.trimmer == 'fastp') {
-        FASTQ_FASTQC_UMITOOLS_FASTP (
-            ch_cat_fastq,
-            params.skip_fastqc || params.skip_qc,
-            params.with_umi,
-            params.skip_umi_extract,
-            params.umi_discard_read,
-            params.skip_trimming,
-            [],
-            params.save_trimmed,
-            params.save_trimmed,
-            params.min_trimmed_reads
-        )
-        ch_filtered_reads      = FASTQ_FASTQC_UMITOOLS_FASTP.out.reads
-        ch_fastqc_raw_multiqc  = FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_raw_zip
-        ch_fastqc_trim_multiqc = FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_zip
-        ch_trim_log_multiqc    = FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_json
-        ch_trim_read_count     = FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_read_count
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions)
-    }
+        //
+        // Get list of samples that failed trimming threshold for MultiQC report
+        //
+        ch_trim_read_count
+            .map {
+                meta, num_reads ->
+                    pass_trimmed_reads[meta.id] = true
+                    if (num_reads <= params.min_trimmed_reads.toFloat()) {
+                        pass_trimmed_reads[meta.id] = false
+                        return [ "$meta.id\t$num_reads" ]
+                    }
+            }
+            .collect()
+            .map {
+                tsv_data ->
+                    def header = ["Sample", "Reads after trimming"]
+                    WorkflowTrimba.multiqcTsvFromList(tsv_data, header)
+            }
+            .set { ch_fail_trimming_multiqc }
 
-    //
-    // Get list of samples that failed trimming threshold for MultiQC report
-    //
-    ch_trim_read_count
-        .map {
-            meta, num_reads ->
-                pass_trimmed_reads[meta.id] = true
-                if (num_reads <= params.min_trimmed_reads.toFloat()) {
-                    pass_trimmed_reads[meta.id] = false
-                    return [ "$meta.id\t$num_reads" ]
-                }
+
+
+        //
+        // MODULE: Filter with bowtie1 to remove rRNA
+        //
+        if (!params.skip_remove_noncoding_rna) {
+            BOWTIE_ALIGN_RNA ( 
+                ch_filtered_reads,
+                ch_bowtie_rnas_index
+            )
+            ch_versions = ch_versions.mix(BOWTIE_ALIGN_RNA.out.versions)
+            ch_norna_reads = BOWTIE_ALIGN_RNA.out.fastq
         }
-        .collect()
-        .map {
-            tsv_data ->
-                def header = ["Sample", "Reads after trimming"]
-                WorkflowTrimba.multiqcTsvFromList(tsv_data, header)
-        }
-        .set { ch_fail_trimming_multiqc }
 
-
-
-    //
-    // MODULE: Filter with bowtie1 to remove rRNA
-    //
-    if (!params.skip_remove_noncoding_rna) {
-        BOWTIE_ALIGN_RNA ( 
-            ch_filtered_reads,
-            ch_bowtie_rnas_index
+        //
+        // MODULE: Align reads to genome
+        //
+        BOWTIE_ALIGN_GENOME (
+            ch_norna_reads,
+            PREPARE_GENOME.out.bowtie_index
         )
-        ch_versions = ch_versions.mix(BOWTIE_ALIGN_RNA.out.versions)
-        ch_norna_reads = BOWTIE_ALIGN_RNA.out.fastq
+        ch_versions = ch_versions.mix(BOWTIE_ALIGN_GENOME.out.versions)
+
+        //
+        // MODULE: Align reads to transcriptome
+        //
+        BOWTIE_ALIGN_TRANSCRIPTOME (
+            ch_norna_reads,
+            PREPARE_GENOME.out.transcripts_index
+        )
+        ch_versions = ch_versions.mix(BOWTIE_ALIGN_TRANSCRIPTOME.out.versions)
+
+        ch_bam_for_genomecov = BOWTIE_ALIGN_TRANSCRIPTOME.out.bam.map { meta, bam ->
+            return [meta, bam, 1]
+        }
+        BEDTOOLS_GENOMECOV (
+            ch_bam_for_genomecov,
+            PREPARE_GENOME.out.chrom_sizes,
+            'bedgraph'       
+        )
+        ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions)    //
+        // SUBWORKFLOW: RiboTish Quality and Predict
+        //
+        RIBOTISH (
+            BOWTIE_ALIGN_GENOME.out.bam,
+            BOWTIE_ALIGN_GENOME.out.bai,
+            PREPARE_GENOME.out.gtf,
+            PREPARE_GENOME.out.fasta,
+        )
+        ch_versions = ch_versions.mix(RIBOTISH.out.versions)
+
+        ch_ribotish_results = RIBOTISH.out.results
+        ch_genomecov        = BEDTOOLS_GENOMECOV.out.genomecov
+    } else {
+        // We are skipping riboSEQ, so we need to create dummy channels
+        def meta = [id: 'gene_list']
+        ch_ribotish_results = [ meta, dummy_file1 ]
+        ch_genomecov        = [ meta, dummy_file2 ]        
     }
-
-    //
-    // MODULE: Align reads to genome
-    //
-    BOWTIE_ALIGN_GENOME (
-        ch_norna_reads,
-        PREPARE_GENOME.out.bowtie_index
-    )
-    ch_versions = ch_versions.mix(BOWTIE_ALIGN_GENOME.out.versions)
-
-    //
-    // MODULE: Align reads to transcriptome
-    //
-    BOWTIE_ALIGN_TRANSCRIPTOME (
-        ch_norna_reads,
-        PREPARE_GENOME.out.transcripts_index
-    )
-    ch_versions = ch_versions.mix(BOWTIE_ALIGN_TRANSCRIPTOME.out.versions)
-
-    ch_bam_for_genomecov = BOWTIE_ALIGN_TRANSCRIPTOME.out.bam.map { meta, bam ->
-        return [meta, bam, 1]
-    }
-    BEDTOOLS_GENOMECOV (
-        ch_bam_for_genomecov,
-        PREPARE_GENOME.out.chrom_sizes,
-        'bedgraph'       
-    )
-    ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions)    //
-    // SUBWORKFLOW: RiboTish Quality and Predict
-    //
-    RIBOTISH (
-        BOWTIE_ALIGN_GENOME.out.bam,
-        BOWTIE_ALIGN_GENOME.out.bai,
-        PREPARE_GENOME.out.gtf,
-        PREPARE_GENOME.out.fasta,
-    )
-    ch_versions = ch_versions.mix(RIBOTISH.out.versions)
 
     //
     // MODULE: Motif finding
     //
     def genes_file = { params.genes_file ?: dummy_file }
     GETTRANSCRIPTS (
-        RIBOTISH.out.results,
-        BEDTOOLS_GENOMECOV.out.genomecov,
+        ch_ribotish_results,
+        ch_genomecov,
         PREPARE_GENOME.out.gtfdb,
         PREPARE_GENOME.out.fasta,
         genes_file,
@@ -350,7 +370,7 @@ workflow TRIMBA {
     //
     // MODULE: MultiQC
     //
-    if (!params.skip_multiqc) {
+    if (!params.skip_multiqc & !params.skip_riboseq) {
         workflow_summary    = WorkflowTrimba.paramsSummaryMultiqc(workflow, summary_params)
         ch_workflow_summary = Channel.value(workflow_summary)
 

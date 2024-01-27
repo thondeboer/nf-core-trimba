@@ -12,8 +12,8 @@ include { BOWTIE_BUILD as BOWTIE_TRANSCRIPTOME_BUILD      } from '../../../modul
 include { RSEM_PREPAREREFERENCE as MAKE_TRANSCRIPTS_FASTA } from '../../../modules/nf-core/rsem/preparereference'
 
 
-include { GETRNAS                             } from '../../../modules/local/getrnas'
-include { GFF_CREATEDB                        } from '../../../modules/local/gff/createdb'
+include { GETRNAS                                         } from '../../../modules/local/getrnas'
+include { GFF_CREATEDB                                    } from '../../../modules/local/gff/createdb'
 
 workflow PREPARE_GENOME {
     take:
@@ -97,9 +97,9 @@ workflow PREPARE_GENOME {
             ch_versions = ch_versions.mix( GETRNAS.out.versions )
             // Create bowtie index of rnas
 
-            BOWTIE_BUILD ( ch_rna_fa )
-            ch_rnas_index = BOWTIE_BUILD.out.index
-            ch_versions = ch_versions.mix( BOWTIE_BUILD.out.versions )
+            BOWTIE_RNA_BUILD ( ch_rna_fa )
+            ch_rnas_index = BOWTIE_RNA_BUILD.out.index
+            ch_versions = ch_versions.mix( BOWTIE_RNA_BUILD.out.versions )
         } else {
             ch_rnas_index = Channel.value(file(rna_index))
         }
@@ -121,7 +121,7 @@ workflow PREPARE_GENOME {
                 ch_transcripts_fasta = Channel.value(file(transcripts_fasta))
             }
         } else {
-            ch_transcripts_fasta = MAKE_TRANSCRIPTS_FASTA ( ch_fasta, ch_gtf ).transcripts_fasta
+            ch_transcripts_fasta = MAKE_TRANSCRIPTS_FASTA ( ch_fasta, ch_gtf ).transcript_fasta
             ch_versions         = ch_versions.mix(MAKE_TRANSCRIPTS_FASTA.out.versions)
         }
 
@@ -140,7 +140,7 @@ workflow PREPARE_GENOME {
     rnas_index        = ch_rnas_index                      // channel: path(bowtie/rnas.index)
     fai               = ch_fai                             // channel: path(genome.fai)
     chrom_sizes       = ch_chrom_sizes                     // channel: path(genome.sizes)
-    transcripts_fasta = ch_transcripts_fasta.ifEmpty(null) // channel: path(transcript.fasta)
+    transcripts_fasta = ch_transcripts_fasta               // channel: path(transcript.fasta)
     transcripts_index = ch_transcripts_index               // channel: path(bowtie/transcript.bowtie.idx)
-    versions          = ch_versions.ifEmpty(null)          // channel: [ versions.yml ]
+    versions          = ch_versions                        // channel: [ versions.yml ]
 }

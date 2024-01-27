@@ -408,6 +408,9 @@
         "nmotifs": {
             "type": "integer",
             "default": 1
+        },
+        "skip_riboseq": {
+            "type": "boolean"
         }
     }
 }

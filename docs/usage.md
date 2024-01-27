@@ -1,4 +1,4 @@
-# nf-core/trimba: Usage
+# nf-core/trimba: Usage INCOMPLETE DO NOT USE - Use Docs_on_trimba_pipeline.html
 
 ## :warning: Please read this documentation on the nf-core website: [https://nf-co.re/trimba/usage](https://nf-co.re/trimba/usage)
 

@@ -23,11 +23,13 @@ def read_fasta(file_path: str) -> pd.DataFrame:
     """
     data = []
     current_id = None
+    current_geneid = None
+    current_genesymbol = None
     current_start_codon = None
     current_sequence = []
 
     # Function to add record to data
-    def add_record(id, start_codon, sequence):
+    def add_record(geneid, id, genesymbol, start_codon, sequence):
         if id is not None:
             # Join the list of sequence lines into a single string
             sequence_str = ''.join(sequence)
@@ -43,7 +45,13 @@ def read_fasta(file_path: str) -> pd.DataFrame:
                 # If start_codon is outside the sequence, use the original sequence
                 modified_sequence = sequence_str
 
-            data.append([id, start_codon, modified_sequence])
+            data.append([
+                geneid,
+                id,
+                genesymbol,
+                start_codon,
+                modified_sequence
+            ])
 
     # Read the file
     with open(file_path, 'r') as file:
@@ -51,23 +59,36 @@ def read_fasta(file_path: str) -> pd.DataFrame:
             line = line.strip()
             if line.startswith('>'):
                 # Add previous record to data
-                add_record(current_id, current_start_codon,
-                           ''.join(current_sequence))
+                add_record(
+                    current_geneid,
+                    current_id,
+                    current_genesymbol,
+                    current_start_codon,
+                    ''.join(current_sequence)
+                )
 
                 # Reset current record
                 parts = line[1:].split()
                 current_id = parts[0]
                 current_start_codon = parts[1] if len(parts) > 1 else None
+                current_geneid = parts[2] if len(parts) > 2 else None
+                current_genesymbol = parts[3] if len(parts) > 3 else None
                 current_sequence = []
             else:
                 # Append sequence
                 current_sequence.append(line)
 
         # Add the last record to data
-        add_record(current_id, current_start_codon, current_sequence)
+        add_record(
+            current_geneid,
+            current_id,
+            current_genesymbol,
+            current_start_codon,
+            current_sequence
+        )
 
     # Create DataFrame
-    return pd.DataFrame(data, columns=['Tid', 'StartCodon_pos', 'fiveprimeutr'])
+    return pd.DataFrame(data, columns=['Gid', 'Tid', 'Symbol', 'StartCodon_pos', 'fiveprimeutr'])
 
 
 def extract_meme_motifs(file_path: str) -> Union[pd.DataFrame, str]:
@@ -143,13 +164,15 @@ def combine_trimba_results(
     Returns:
         pd.DataFrame: A DataFrame containing the combined data from all three files.
     """
-    r = pd.read_csv(ribotish_file, sep='\t')
     t = read_fasta(transcript_file)
-    if r.empty or len(r) == 0 or t.empty or len(t) == 0:
-        logger.warning("No data found in the input files.")
-        return None
-    else:
-        rt = r.merge(t, on='Tid', how='left')
+    # Ribotsih could be empty, if we have skipped riboSEQ analysis
+    try:
+        r = pd.read_csv(ribotish_file, sep='\t')
+        # Only need Tid and StartCodon_pos columns from transcript file, if we have ribotish data
+        rt = r.merge(t[['Tid', 'StartCodon_pos', 'fiveprimeutr']],
+                     on='Tid', how='left')
+    except:
+        rt = t
     s = pd.read_csv(sea_file, sep='\t')
     if not s.empty and len(s) > 0:
         s.rename(columns={'seq_ID': 'Tid',

@@ -143,7 +143,7 @@ def get_transcripts(
                 if t[7]+padding-1 > min_size:
                     s = t[8][:t[7]+padding-1]
                     seq = '\n'.join(s[i:i+80] for i in range(0, len(s), 80))
-                    f.write(f">{t[6]} {t[7]}\n{seq}\n")
+                    f.write(f">{t[6]} {t[7]} {t[5]} {t[4]}\n{seq}\n")
         # Filter bedgraph file on transcripts and save
         filtered_transcripts = [t[6] for t in tr_list]
         bedgraph_out = Path(fasta_out).with_suffix(".filtered.bedgraph")
