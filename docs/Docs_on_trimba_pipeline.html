@@ -14656,6 +14656,37 @@ For more examples and ideas, visit:
 </code></pre>
 <p>If docker is not installed, check the following on how to install docker on Windows machine and configure it for use on your Ubuntu WSL2 (Windows Subsystem for Linux, version 2) system.</p>
 <p><a href="https://docs.docker.com/desktop/wsl/">https://docs.docker.com/desktop/wsl/</a></p>
+<h4 id="Permission-denied-error">Permission denied error<a class="anchor-link" href="#Permission-denied-error">&#182;</a></h4><p>When you get the following when trying to run <code>docker run hello-world</code>:</p>
+<pre><code>&quot;Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Post &quot;http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/create&quot;: dial unix /var/run/docker.sock: connect: permission denied.
+</code></pre>
+<p>it means that the uesr you run at, is not yet a member of to <code>docker</code> group. Either run as <code>sudo</code> or better, add the user to the <code>docker</code> group with the following command:</p>
+<div class="highlight"><pre><span></span>sudo usermod -aG docker <span class="k">$(</span>whoami<span class="k">)</span>
+</pre></div>
+<p>Now you should be able to run:</p>
+<div class="highlight"><pre><span></span>docker run hello-world
+</pre></div>
+<p>and get something like this:</p>
+<pre><code>Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the &quot;hello-world&quot; image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+</code></pre>
 <h3 id="Test-if-you-have-nextflow">Test if you have nextflow<a class="anchor-link" href="#Test-if-you-have-nextflow">&#182;</a></h3><p>The pipelines are executed with <a href="https://www.nextflow.io/"><code>nextflow</code></a> and you can check if <code>nextflow</code> is installed with this command:</p>
 <pre><code>nextflow -v
 </code></pre>
