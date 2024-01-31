@@ -3,7 +3,7 @@ process GETTRANSCRIPTS {
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
-    container "local.io/gettranscripts:0.0.7"
+    container "quay.io/biocontainers/gffutils"
 
     input:
     tuple val(meta), path(ribotish)
