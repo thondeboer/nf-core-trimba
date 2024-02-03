@@ -108,12 +108,12 @@ def get_transcripts(
     tr_list = []
     for gene in db.features_of_type('gene'):
         g = gene.attributes.get('gene_name', [None])[0]
-        logger.warning(f"Processing gene {g}.")
+        logger.debug(f"Processing gene {g}.")
         if g is not None and g.lower() in genes:
             for tr in db.children(gene, featuretype='transcript'):
                 if rtranscripts and tr.id not in rtranscripts:
                     continue
-                logger.warning(f"Processing transcript {tr.id} for gene {g}.")
+                logger.debug(f"Processing transcript {tr.id} for gene {g}.")
                 s = ""
                 start_codon = 0
                 has_utr5 = False
