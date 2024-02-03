@@ -108,6 +108,7 @@ def get_transcripts(
     tr_list = []
     for gene in db.features_of_type('gene'):
         g = gene.attributes.get('gene_name', [None])[0]
+        logger.warning(f"Processing gene {g}.")
         if g.lower() in genes:
             for tr in db.children(gene, featuretype='transcript'):
                 if rtranscripts and tr.id not in rtranscripts:
