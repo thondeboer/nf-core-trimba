@@ -3,7 +3,9 @@ process RIBOTISH_PREDICT {
     label 'process_high'
 
     conda "${moduleDir}/../environment.yml"
-    container "local.io/ribotish:0.2.7"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/ribotish:0.2.5--pyh864c0ab_1' :
+        'quay.io/biocontainers/ribotish:0.2.7--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam)

@@ -24,20 +24,20 @@ NEXTFLOW="nextflow"
 # REFERENCE FILES CONFIGURATION
 #
 
-# Mouse data - REQUIRED - Only these THREE files are required
+# Human data - REQUIRED - Only these THREE files are required
 # See the documentation on how to download these files
-GRCM38_FASTA="${REF}/nf-core/GRCm38/fasta/default/Mus_musculus.GRCm38.dna.primary_assembly.fa"
-GRCM38_GTF="${REF}/nf-core/GRCm38/ensembl_gtf/default/Mus_musculus.GRCm38.102.gtf.gz"
+GRCH38_FASTA="${REF}/nf-core/GRCh38/fasta/default/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz"
+GRCH38_GTF="${REF}/nf-core/GRCh38/ensembl_gtf/default/Homo_sapiens.GRCh38.110.gtf.gz"
 MEME_DB="${REF}/memesuite/motif_databases"
 
 # Mouse data - OPTIONAL (If not provided, will be created at run time but with save_reference can be saved for next time)
-GRCM38_GTF_DB="${REF}/nf-core/GRCm38/ensembl_gtf/default/Mus_musculus.GRCm38.102.gtf.db"
-GRCM38_BOWTIE_IDX="${REF}/nf-core/GRCm38/fasta/default/GENOME/bowtie"
-GRCM38_RNAS_BOWTIE_IDX="${REF}/nf-core/GRCm38/fasta/default/RNA/bowtie"
-GRCM38_TRANSCRIPTS_BOWTIE_IDX="${REF}/nf-core/GRCm38/fasta/default/TRANSCRIPTOME/bowtie"
+GRCH38_GTF_DB="${REF}/nf-core/GRCh38/ensembl_gtf/default/Homo_sapiens.GRCh38.110.gtf.db"
+GRCH38_BOWTIE_IDX="${REF}/nf-core/GRCh38/fasta/default/GENOME/bowtie"
+GRCH38_RNAS_BOWTIE_IDX="${REF}/nf-core/GRCh38/fasta/default/RNA/bowtie"
+GRCH38_TRANSCRIPTS_BOWTIE_IDX="${REF}/nf-core/GRCh38/fasta/default/TRANSCRIPTOME/bowtie"
 # For RNASEQ
-GRCM38_STAR_INDEX="${REF}/nf-core/GRCm38/fasta/default/star"
-GRCM38_SALMON_INDEX="${REF}/nf-core/GRCm38/fasta/default/salmon"
+GRCH38_STAR_INDEX="${REF}/nf-core/GRCh38/fasta/default/star"
+GRCH38_SALMON_INDEX="${REF}/nf-core/GRCh38/fasta/default/salmon"
 
 #*****************************
 #* END OF MAIN CONFIGURATION *
@@ -161,12 +161,12 @@ EOFMTFS
 cat > "${PARAMS_TRIMBA}" <<EOFPARAMST
 input:                          "$SAMPLESHEET_TRIMBA"
 outdir:                         "$OUTDIR_TRIMBA"
-fasta:                          "$GRCM38_FASTA"
-gtf:                            "$GRCM38_GTF"
-gtfdb:                          "$GRCM38_GTF_DB"
-rna_index:                      "$GRCM38_RNAS_BOWTIE_IDX"
-bowtie_index:                   "$GRCM38_BOWTIE_IDX"
-transcripts_index:              "$GRCM38_TRANSCRIPTS_BOWTIE_IDX"
+fasta:                          "$GRCH38_FASTA"
+gtf:                            "$GRCH38_GTF"
+gtfdb:                          "$GRCH38_GTF_DB"
+rna_index:                      "$GRCH38_RNAS_BOWTIE_IDX"
+bowtie_index:                   "$GRCH38_BOWTIE_IDX"
+transcripts_index:              "$GRCH38_TRANSCRIPTS_BOWTIE_IDX"
 
 genes_file:                     "$GENES_OF_INTEREST"
 motifs_file:                    "$MOTIFS_FILE"
@@ -196,9 +196,9 @@ EOFPARAMST
 cat > "${PARAMS_RNASEQ}" <<EOFPARAMSR
 input:                 "$SAMPLESHEET_RNASEQ"
 outdir:                "$OUTDIR_RNASEQ"
-fasta:                 "${GRCM38_FASTA}"
-gtf:                   "${GRCM38_GTF}"
-salmon_index:          "${GRCM38_SALMON_INDEX}"
+fasta:                 "${GRCH38_FASTA}"
+gtf:                   "${GRCH38_GTF}"
+salmon_index:          "${GRCH38_SALMON_INDEX}"
 pseudo_aligner:        "salmon"
 
 publish_dir_mode:      'symlink'
