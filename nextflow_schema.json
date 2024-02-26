@@ -411,6 +411,9 @@
         },
         "skip_riboseq": {
             "type": "boolean"
+        },
+        "skip_meme": {
+            "type": "boolean"
         }
     }
 }

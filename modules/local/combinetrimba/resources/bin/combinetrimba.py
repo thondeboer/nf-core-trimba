@@ -36,21 +36,22 @@ def read_fasta(file_path: str) -> pd.DataFrame:
 
             # Ensure start_codon is an integer and within the sequence length
             start_pos = int(start_codon)
-            if start_pos < len(sequence_str):
-                # Insert spaces around the start codon
-                modified_sequence = sequence_str[:start_pos] + ' ' + \
-                    sequence_str[start_pos:start_pos+3] + \
-                    ' ' + sequence_str[start_pos+3:]
-            else:
-                # If start_codon is outside the sequence, use the original sequence
-                modified_sequence = sequence_str
+            # YASAR DID NOT WANT THE SPACES AROUND THE START CODON
+            # if start_pos < len(sequence_str):
+            #     # Insert spaces around the start codon
+            #     modified_sequence = sequence_str[:start_pos]  + \
+            #         sequence_str[start_pos:start_pos+3] + \
+            #         sequence_str[start_pos+3:]
+            # else:
+            #     # If start_codon is outside the sequence, use the original sequence
+            #     modified_sequence = sequence_str
 
             data.append([
                 geneid,
                 id,
                 genesymbol,
                 start_codon,
-                modified_sequence
+                sequence_str
             ])
 
     # Read the file
