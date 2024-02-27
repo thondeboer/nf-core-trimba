@@ -9,9 +9,9 @@ process COMBINETRIMBA {
 
     input:
     tuple val(meta), path(transcript)
-    tuple val(meta), path(ribotish)
-    tuple val(meta), path(meme)
-    tuple val(meta), path(sites)
+    path(ribotish)
+    path(meme)
+    path(sites)
 
     output:
     tuple val(meta), path("*.trimba_results.tsv")  , emit: trimbaresults, optional: true

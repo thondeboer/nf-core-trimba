@@ -343,8 +343,8 @@ workflow TRIMBA {
     //
     // MODULE: Find known and novel motifs
     //
-    ch_meme_results = [ [:], dummy_file1 ]
-    ch_sites = [ [:], dummy_file2 ]
+    ch_meme_results = dummy_file1
+    ch_sites        = dummy_file2
     if (!params.skip_meme) {
         ch_motifs= Channel.from(ch_motifs_file.readLines()).map { row -> file(row, checkIfExists: true) }.collect()
         MEMESUITE (
@@ -353,15 +353,15 @@ workflow TRIMBA {
             params.nmotifs
         )
         ch_versions = ch_versions.mix(MEMESUITE.out.versions)
-        ch_meme_results = MEMESUITE.out.resulttxt
-        ch_sites = MEMESUITE.out.sites
+        ch_meme_results = MEMESUITE.out.resulttxt.map { it[1] }
+        ch_sites = MEMESUITE.out.sites.map { it[1] }
     }
     //
     // MODULE: Combine all the results
     //
     COMBINETRIMBA (
         GETTRANSCRIPTS.out.fasta,
-        GETTRANSCRIPTS.out.ribotish,
+        GETTRANSCRIPTS.out.ribotish.map { it[1] },
         ch_meme_results,
         ch_sites,
     )
