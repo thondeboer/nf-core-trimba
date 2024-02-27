@@ -174,20 +174,28 @@ def combine_trimba_results(
                      on='Tid', how='left')
     except:
         rt = t
-    s = pd.read_csv(sea_file, sep='\t')
-    if not s.empty and len(s) > 0:
-        s.rename(columns={'seq_ID': 'Tid',
-                 'Motif_Start': 'SEA_Start'}, inplace=True)
-        rts = rt.merge(s, on='Tid', how='left')
-    else:
+    try:
+        s = pd.read_csv(sea_file, sep='\t')
+        if not s.empty and len(s) > 0:
+            s.rename(columns={'seq_ID': 'Tid',
+                              'Motif_Start': 'SEA_Start'}, inplace=True)
+            rts = rt.merge(s, on='Tid', how='left')
+        else:
+            logger.warning("No SEA motif data found.")
+            rts = rt
+    except:
         logger.warning("No SEA motif data found.")
         rts = rt
-    m = extract_meme_motifs(meme_file)
-    # meme uses 1-notation for start codon, so we need to convert it to 0-notation
-    if m is not None:
-        m['Motif_Start'] = m['Motif_Start'].astype(int) - 1
-        df = rts.merge(m, on='Tid', how='left')
-    else:
+    try:
+        m = extract_meme_motifs(meme_file)
+        # meme uses 1-notation for start codon, so we need to convert it to 0-notation
+        if m is not None:
+            m['Motif_Start'] = m['Motif_Start'].astype(int) - 1
+            df = rts.merge(m, on='Tid', how='left')
+        else:
+            logger.warning("No MEME motif data found.")
+            df = rts
+    except:
         logger.warning("No MEME motif data found.")
         df = rts
     df.to_csv(f'{prefix}.tsv', index=False, header=True, sep='\t')
